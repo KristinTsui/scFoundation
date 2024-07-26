@@ -73,7 +73,17 @@ class FinetunePatientClassification(nn.Module):
         return logits
     
     def compute_loss(self, logits, targets):
-        return nn.functional.binary_cross_entropy_with_logits(logits.squeeze(), targets)
+        # log the shape of the logits and targets
+        print('logits shape: ', logits.shape)
+        print('target shape: ', targets.shape)
+
+        # Squeeze logits to match target shape
+        if logits.dim() == 2:
+            logits = logits.squeeze(1) # remove the second dimension of the logits
+        
+        print('squeezed logits shape: ', logits.shape)
+
+        return nn.functional.binary_cross_entropy_with_logits(logits, targets)
     
 if __name__ == '__main__':
     finetune_model = FinetunePatientClassification(ckpt_path='./models/models.ckpt')
