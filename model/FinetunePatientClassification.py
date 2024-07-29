@@ -26,9 +26,9 @@ class FinetunePatientClassification(nn.Module):
 
             for na, param in self.encoder.named_parameters():
                 param.requires_grad = False
-            for na, param in self.encoder.transformer_encoder.named_parameters():
-                print('self.encoder.transformer_encoder ', na, ' no grad')
-                param.requires_grad = False
+            for na, param in self.encoder.transformer_encoder[-2].named_parameters():
+                print('self.encoder.transformer_encoder ', na, ' have grad')
+                param.requires_grad = True
 
         self.fc1 = nn.Sequential(
             nn.Linear(model_config['encoder']['hidden_dim'], 256), # number of input features is the hidden dimension of the encoder
@@ -46,7 +46,7 @@ class FinetunePatientClassification(nn.Module):
     def forward(self, sample_list, *arg, **kwargs):
         
 
-        label = sample_list['targets'] # get the target labels from sample_list
+        targets = sample_list['targets'] # get the target labels from sample_list
 
         x = sample_list['x'] # get the expression data from the current batch (B, L)
         value_labels = x > 0 # create a boolean mask where expression is non-zero
@@ -74,14 +74,14 @@ class FinetunePatientClassification(nn.Module):
     
     def compute_loss(self, logits, targets):
         # log the shape of the logits and targets
-        print('logits shape: ', logits.shape)
-        print('target shape: ', targets.shape)
+        # print('logits shape: ', logits.shape)
+        # print('target shape: ', targets.shape)
 
         # Squeeze logits to match target shape
         if logits.dim() == 2:
             logits = logits.squeeze(1) # remove the second dimension of the logits
         
-        print('squeezed logits shape: ', logits.shape)
+        # print('squeezed logits shape: ', logits.shape)
 
         return nn.functional.binary_cross_entropy_with_logits(logits, targets)
     
